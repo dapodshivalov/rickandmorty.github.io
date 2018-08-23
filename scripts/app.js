@@ -11,21 +11,12 @@ var window_w;
 var locationData;
 // count of characters
 var countCharacter;
+// locations array
+var locations;
 
 window.onload = function(){
 	// getting locations from api
-	$.ajax({
-		url: 'https://rickandmortyapi.com/api/location',
-		dataType: 'json',
-		beforreSend: function () {
-			console.log('Loading locations data...');
-		},
-		success: function (data, textStatus){
-			console.log(textStatus);
-			console.log(data);
-			locationData = data;
-		}
-	});
+
 
 	// getting number of characters from api
 	$.ajax({
@@ -55,9 +46,42 @@ window.onload = function(){
 };
 
 
+/*-------async recursion way to get all location from api-------*/	
 
+// get JSON location from url using JQuery Ajax
+function getLocation(url){
+	return new Promise(function(resolve, reject) {
+		$.ajax({
+			url: url,
+			dataType: 'json',
+			beforreSend: function () {
+				console.log('Loading locations data...(' + url + ')');
+			},
+			error: reject,
+			success: resolve
+		});
+	});
+}
 
+// check if there is next page and call the next page
+function onGetLocationSuccess(data){
+	console.log('next:' + data.info.next);
+	setTimeout(addLocations, 0, data.results);
+	if (data.info.next === ""){
+		return;
+	}
+	getLocation(data.info.next).then(onGetLocationSuccess);
+}
 
+// TODO...
+function addLocations(data){
+	console.log(data);
+}
+
+// call recursion
+getLocation('https://rickandmortyapi.com/api/location?page=1').then(onGetLocationSuccess, console.log);
+
+/*-------*/
 
 
 // class Location
